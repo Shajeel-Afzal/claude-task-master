@@ -2,6 +2,34 @@
 
 Here's a comprehensive reference of all available commands:
 
+## Create PRD
+
+```bash
+# Create a PRD using AI assistance
+task-master create-prd "Project description"
+
+# Create with interactive mode for detailed input
+task-master create-prd --interactive
+
+# Use different templates
+task-master create-prd "E-commerce platform" --template=detailed
+task-master create-prd "Simple utility" --template=minimal
+
+# Use research AI for enhanced content
+task-master create-prd "Healthcare app" --research
+
+# Specify custom output path
+task-master create-prd "Mobile game" --output=game-prd.txt
+
+# Force overwrite existing PRD
+task-master create-prd "Updated project" --force
+```
+
+Available templates:
+- `minimal`: Basic PRD structure for simple projects
+- `standard`: Comprehensive PRD with all standard sections (default)
+- `detailed`: Extensive PRD with additional technical sections
+
 ## Parse PRD
 
 ```bash

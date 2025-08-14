@@ -33,10 +33,12 @@ import {
 	scopeDownTask,
 	validateStrength
 } from './task-manager/scope-adjustment.js';
+import { createPRD } from './task-manager/create-prd.js';
 
 // Export task manager functions
 export {
 	parsePRD,
+	createPRD,
 	updateTasks,
 	updateTaskById,
 	updateSubtaskById,

@@ -40,6 +40,7 @@ import { registerResearchTool } from './research.js';
 import { registerRulesTool } from './rules.js';
 import { registerScopeUpTool } from './scope-up.js';
 import { registerScopeDownTool } from './scope-down.js';
+import createPrdTool from './create-prd.js';
 
 /**
  * Register all Task Master tools with the MCP server
@@ -53,6 +54,7 @@ export function registerTaskMasterTools(server) {
 		registerInitializeProjectTool(server);
 		registerModelsTool(server);
 		registerRulesTool(server);
+		server.registerTool(createPrdTool);
 		registerParsePRDTool(server);
 
 		// Group 2: Task Analysis & Expansion
