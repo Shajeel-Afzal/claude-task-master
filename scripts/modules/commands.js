@@ -24,6 +24,7 @@ import {
 } from './utils.js';
 import {
 	parsePRD,
+	createPRD,
 	updateTasks,
 	generateTaskFiles,
 	setTaskStatus,
@@ -798,6 +799,151 @@ function registerCommands(programInstance) {
 		);
 		process.exit(1);
 	});
+
+	// create-prd command
+	programInstance
+		.command('create-prd')
+		.description('Create a Product Requirements Document (PRD) using AI assistance')
+		.argument('[description]', 'High-level description of the project')
+		.option(
+			'-o, --output <file>',
+			'Output file path',
+			`.taskmaster/docs/prd.txt`
+		)
+		.option(
+			'-t, --template <type>',
+			'Template type to use (minimal, standard, detailed)',
+			'standard'
+		)
+		.option(
+			'-i, --interactive',
+			'Use interactive mode to gather project details'
+		)
+		.option(
+			'-r, --research',
+			'Use research AI for more comprehensive PRD generation'
+		)
+		.option('-f, --force', 'Overwrite existing PRD file')
+		.addHelpText(
+			'after',
+			`
+Examples:
+  $ task-master create-prd "A web app for task management"
+  $ task-master create-prd --template=detailed --research
+  $ task-master create-prd "Mobile app for fitness tracking" --output=fitness-prd.txt
+  $ task-master create-prd --interactive
+  $ task-master create-prd "E-commerce platform" --force
+
+Templates:
+  minimal   - Basic PRD structure for simple projects
+  standard  - Comprehensive PRD with all standard sections (default)
+  detailed  - Extensive PRD with additional technical sections
+
+Note: After creating the PRD, use 'task-master parse-prd' to generate tasks.`
+		)
+		.action(async (description, options) => {
+			try {
+				// Initialize TaskMaster for project root detection
+				const taskMaster = initTaskMaster({});
+				const projectRoot = taskMaster.getProjectRoot();
+
+				// Handle interactive mode
+				if (options.interactive) {
+					console.log(chalk.blue('🚀 Interactive PRD Creation'));
+					console.log(chalk.gray('━'.repeat(50)));
+					
+					const prompts = [
+						{
+							type: 'input',
+							name: 'description',
+							message: 'What is your project about? (Brief description):',
+							validate: input => input.trim().length > 0 || 'Please provide a project description'
+						},
+						{
+							type: 'list',
+							name: 'template',
+							message: 'Which template would you like to use?',
+							choices: [
+								{ name: 'Standard - Comprehensive PRD (recommended)', value: 'standard' },
+								{ name: 'Minimal - Basic structure for simple projects', value: 'minimal' },
+								{ name: 'Detailed - Extensive PRD with technical sections', value: 'detailed' }
+							],
+							default: 'standard'
+						},
+						{
+							type: 'confirm',
+							name: 'research',
+							message: 'Use research AI for more comprehensive content?',
+							default: false
+						}
+					];
+
+					const answers = await inquirer.prompt(prompts);
+					description = answers.description;
+					options.template = answers.template;
+					options.research = answers.research;
+				}
+
+				// Validate description
+				if (!description || description.trim().length === 0) {
+					console.error(chalk.red('Error: Project description is required.'));
+					console.log(chalk.yellow('Usage examples:'));
+					console.log(chalk.cyan('  task-master create-prd "A web app for task management"'));
+					console.log(chalk.cyan('  task-master create-prd --interactive'));
+					process.exit(1);
+				}
+
+				// Validate template
+				const validTemplates = ['minimal', 'standard', 'detailed'];
+				if (!validTemplates.includes(options.template)) {
+					console.error(
+						chalk.red(`Error: Invalid template '${options.template}'. Valid options: ${validTemplates.join(', ')}`)
+					);
+					process.exit(1);
+				}
+
+				// Resolve output path
+				const outputPath = path.isAbsolute(options.output) 
+					? options.output 
+					: path.join(projectRoot, options.output);
+
+				console.log(chalk.blue(`Creating PRD with AI assistance...`));
+				console.log(chalk.blue(`Description: "${description}"`));
+				console.log(chalk.blue(`Template: ${options.template}`));
+				console.log(chalk.blue(`Output: ${outputPath}`));
+				
+				if (options.research) {
+					console.log(chalk.blue('Using research AI for enhanced content'));
+				}
+
+				const result = await createPRD(description, outputPath, {
+					projectRoot,
+					template: options.template,
+					research: options.research,
+					force: options.force
+				});
+
+				if (result.success) {
+					console.log(chalk.green('\n🎉 PRD created successfully!'));
+					console.log(chalk.blue('\n📋 Next steps:'));
+					console.log(chalk.cyan(`1. Review your PRD: ${result.path}`));
+					console.log(chalk.cyan(`2. Generate tasks: task-master parse-prd ${result.path}`));
+					console.log(chalk.cyan('3. Start building! 🚀'));
+				}
+
+			} catch (error) {
+				console.error(chalk.red(`Error creating PRD: ${error.message}`));
+				
+				if (error.message.includes('API key')) {
+					console.log(chalk.yellow('\nThis error is related to API keys. Please check your environment variables.'));
+				} else if (error.message.includes('already exists')) {
+					console.log(chalk.yellow('\nTo overwrite the existing file, use the --force flag:'));
+					console.log(chalk.cyan(`task-master create-prd "${description}" --force`));
+				}
+
+				process.exit(1);
+			}
+		});
 
 	// parse-prd command
 	programInstance
