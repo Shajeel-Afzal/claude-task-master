@@ -549,6 +549,11 @@ function displayHelp() {
 			color: 'cyan',
 			commands: [
 				{
+					name: 'create-prd',
+					args: '"<description>" [--template=<type>] [--interactive] [--research]',
+					desc: 'Create a Product Requirements Document using AI'
+				},
+				{
 					name: 'parse-prd',
 					args: '--input=<file.txt> [--num-tasks=10]',
 					desc: 'Generate tasks from a PRD document'

@@ -154,7 +154,19 @@ In your editor's AI chat pane, say:
 Initialize taskmaster-ai in my project
 ```
 
-#### 5. Make sure you have a PRD (Recommended)
+#### 5. Create or import a PRD (Recommended)
+
+**Option A: Create PRD with AI assistance (NEW!)**
+
+```bash
+# Create a PRD interactively
+task-master create-prd --interactive
+
+# Or create directly with a description
+task-master create-prd "A web application for task management with real-time collaboration"
+```
+
+**Option B: Manual PRD creation**
 
 For **new projects**: Create your PRD at `.taskmaster/docs/prd.txt`  
 For **existing projects**: You can use `scripts/prd.txt` or migrate with `task-master migrate`
@@ -172,6 +184,7 @@ The more detailed your PRD, the better the generated tasks will be.
 
 Use your AI assistant to:
 
+- **Create PRD**: `Can you create a PRD for a mobile fitness tracking app?`
 - Parse requirements: `Can you parse my PRD at scripts/prd.txt?`
 - Plan next step: `What's the next task I should work on?`
 - Implement a task: `Can you help me implement task 3?`
@@ -214,6 +227,10 @@ This will prompt you for project details and set up a new project with the neces
 ```bash
 # Initialize a new project
 task-master init
+
+# Create a PRD using AI assistance
+task-master create-prd "Project description"
+task-master create-prd --interactive
 
 # Parse a PRD and generate tasks
 task-master parse-prd your-prd.txt

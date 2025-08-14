@@ -49,6 +49,13 @@ import {
 	validateStrength
 } from './task-manager.js';
 
+import { 
+	getAvailableTemplates, 
+	getTemplate, 
+	gatherTemplateResponses, 
+	createGuidedDescription 
+} from './prompt-templates.js';
+
 import {
 	createTag,
 	deleteTag,
@@ -820,6 +827,10 @@ function registerCommands(programInstance) {
 			'Use interactive mode to gather project details'
 		)
 		.option(
+			'-g, --guided <template>',
+			'Use guided template mode (webApp, mobileApp, apiService, dashboard, ecommerce, cms, iot, generic)'
+		)
+		.option(
 			'-r, --research',
 			'Use research AI for more comprehensive PRD generation'
 		)
@@ -832,12 +843,23 @@ Examples:
   $ task-master create-prd --template=detailed --research
   $ task-master create-prd "Mobile app for fitness tracking" --output=fitness-prd.txt
   $ task-master create-prd --interactive
+  $ task-master create-prd --guided=webApp
   $ task-master create-prd "E-commerce platform" --force
 
 Templates:
   minimal   - Basic PRD structure for simple projects
   standard  - Comprehensive PRD with all standard sections (default)
   detailed  - Extensive PRD with additional technical sections
+
+Guided Templates:
+  webApp     - Web application projects
+  mobileApp  - Mobile application projects  
+  apiService - Backend APIs and services
+  dashboard  - Analytics and dashboard projects
+  ecommerce  - E-commerce and marketplace projects
+  cms        - Content management systems
+  iot        - IoT and hardware integration projects
+  generic    - General purpose template
 
 Note: After creating the PRD, use 'task-master parse-prd' to generate tasks.`
 		)
@@ -847,8 +869,33 @@ Note: After creating the PRD, use 'task-master parse-prd' to generate tasks.`
 				const taskMaster = initTaskMaster({});
 				const projectRoot = taskMaster.getProjectRoot();
 
+				// Handle guided template mode
+				if (options.guided) {
+					const availableTemplates = getAvailableTemplates();
+					const templateExists = availableTemplates.find(t => t.key === options.guided);
+					
+					if (!templateExists) {
+						console.error(chalk.red(`Error: Unknown guided template '${options.guided}'.`));
+						console.log(chalk.yellow('Available templates:'));
+						availableTemplates.forEach(t => {
+							console.log(chalk.cyan(`  ${t.key} - ${t.description}`));
+						});
+						process.exit(1);
+					}
+
+					console.log(chalk.blue(`🎯 Guided PRD Creation: ${templateExists.name}`));
+					console.log(chalk.gray('━'.repeat(50)));
+					console.log(chalk.yellow(`${templateExists.description}\n`));
+
+					const responses = await gatherTemplateResponses(options.guided, inquirer.prompt);
+					description = createGuidedDescription(options.guided, responses);
+					
+					console.log(chalk.green('\n✅ Template responses collected!'));
+					console.log(chalk.blue('Generating comprehensive PRD...'));
+				}
 				// Handle interactive mode
-				if (options.interactive) {
+				// Handle interactive mode
+				if (options.interactive && !options.guided) {
 					console.log(chalk.blue('🚀 Interactive PRD Creation'));
 					console.log(chalk.gray('━'.repeat(50)));
 					
@@ -890,6 +937,7 @@ Note: After creating the PRD, use 'task-master parse-prd' to generate tasks.`
 					console.log(chalk.yellow('Usage examples:'));
 					console.log(chalk.cyan('  task-master create-prd "A web app for task management"'));
 					console.log(chalk.cyan('  task-master create-prd --interactive'));
+					console.log(chalk.cyan('  task-master create-prd --guided=webApp'));
 					process.exit(1);
 				}
 
